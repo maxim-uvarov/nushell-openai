@@ -110,69 +110,69 @@ export def "display markdown" [
     --no-bat(-b)
     --force-nu
 ] {
-    let input = $in
-    mut markdown = $input
-    mut code_lang = ""
-    mut code = []
-    mut is_code = false
-    for $line in ($markdown | lines) {
+#     let input = $in
+#     mut markdown = $input
+#     mut code_lang = ""
+#     mut code = []
+#     mut is_code = false
+#     for $line in ($markdown | lines) {
         
-        if ($line =~ "^```") {
-            if $is_code == true {
-                let str_code = ($code | str join "\n")
-                let bat = (which bat)
-                if ($bat | length) > 0 and (not $no_bat) {
-                    mut bat_args = [--color always --paging never --file-name $"code ($code_lang)" -]
+#         if ($line =~ "^```") {
+#             if $is_code == true {
+#                 let str_code = ($code | str join "\n")
+#                 let bat = (which bat)
+#                 if ($bat | length) > 0 and (not $no_bat) {
+#                     mut bat_args = [--color always --paging never --file-name $"code ($code_lang)" -]
                     
-                    if ($code_lang | is-empty) == false  and $code_lang != "nu" {
-                        $bat_args = ($bat_args | append ["--language" $code_lang])
-                    }
-                    if $code_lang == "nu" {
-                        $str_code | nu-highlight | bat $bat_args
-                    } else {
-                        $str_code | bat $bat_args
-                    }
+#                     if ($code_lang | is-empty) == false  and $code_lang != "nu" {
+#                         $bat_args = ($bat_args | append ["--language" $code_lang])
+#                     }
+#                     if $code_lang == "nu" {
+#                         $str_code | nu-highlight | bat $bat_args
+#                     } else {
+#                         $str_code | bat $bat_args
+#                     }
                     
-                } else {
-                    if $code_lang == "nu" or $force_nu {
-                        $str_code | nu-highlight | print
-                    } else {
-                        print $str_code
-                    }
-                }
-                $code = []
-                $code_lang = ""
-                $is_code = false
-            } else {
-                let langs = ($line | parse -r '^```(?<lang>\w+)')
-                $code_lang = (if ($langs | length) > 0 {($langs | get 0.lang)} else {null})
-                $code = []
-                $is_code = true
-            }
-            continue
-        } 
-        if $is_code == true {
-            $code = ($code | append [$line])
-            continue
-        }
+#                 } else {
+#                     if $code_lang == "nu" or $force_nu {
+#                         $str_code | nu-highlight | print
+#                     } else {
+#                         print $str_code
+#                     }
+#                 }
+#                 $code = []
+#                 $code_lang = ""
+#                 $is_code = false
+#             } else {
+#                 let langs = ($line | parse -r '^```(?<lang>\w+)')
+#                 $code_lang = (if ($langs | length) > 0 {($langs | get 0.lang)} else {null})
+#                 $code = []
+#                 $is_code = true
+#             }
+#             continue
+#         } 
+#         if $is_code == true {
+#             $code = ($code | append [$line])
+#             continue
+#         }
 
-        if ($line =~ '^\s*#+\s+') {
-            let name = ($line | parse -r '^\s*#+\s+(?<name>.*)$' | get 0.name)
-            md_title $name
-            continue
-        } 
+#         if ($line =~ '^\s*#+\s+') {
+#             let name = ($line | parse -r '^\s*#+\s+(?<name>.*)$' | get 0.name)
+#             md_title $name
+#             continue
+#         } 
 
-        mut newline = $line
+#         mut newline = $line
         
-        if ($newline =~ '^\s*-\s+') {
-            let parsed = ($line | parse -r '^(\s*)(-\s+)' | get 0 )
-            let index = (($parsed.capture0 | str length) + ($parsed.capture1 | str length))
-            let spacing = ($parsed.capture0 | str length)
-            $newline = $"(repeat ' ' $spacing)(char prompt) ($newline | str substring $index..)"
-        }
+#         if ($newline =~ '^\s*-\s+') {
+#             let parsed = ($line | parse -r '^(\s*)(-\s+)' | get 0 )
+#             let index = (($parsed.capture0 | str length) + ($parsed.capture1 | str length))
+#             let spacing = ($parsed.capture0 | str length)
+#             $newline = $"(repeat ' ' $spacing)(char prompt) ($newline | str substring $index..)"
+#         }
 
-        $newline = ($newline | md_add_modifier)
-        print $newline
-        print -n (ansi reset)
-    }
+#         $newline = ($newline | md_add_modifier)
+#         print $newline
+#         print -n (ansi reset)
+#     }
 }
