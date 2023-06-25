@@ -202,6 +202,7 @@ export def ask [
     input?: string                          # The question to ask. If not provided, will use the input from the pipeline
     --model: string = "gpt-3.5-turbo"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int                       # The maximum number of tokens to generate, defaults to 150
+    --system: string = "Answer my question as if you were an expert in the field."
 ] {
     let input = ($in | default $input)
     if $input == null {
@@ -212,7 +213,7 @@ export def ask [
     }
     let max_tokens = ($max_tokens | default 300)
     let messages = [
-        {"role": "system", "content": "You are GPT-3.5, answer my question as if you were an expert in the field."},
+        {"role": "system", "content": $system},
         {"role": "user", "content": $input}
     ]
     let result = (api chat-completion $model $messages --temperature 0.7 --top-p 1.0 --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens )
@@ -266,3 +267,67 @@ export def test [
     
     api chat-completion "gpt-3.5-turbo" [{role:"user" content:"Hello!"}] --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 64 --stop "\\n"
 }
+
+export def results_record [
+    input?: string                          # The question to ask. If not provided, will use the input from the pipeline
+    --model: string = "gpt-3.5-turbo"    # The model to use, defaults to gpt-3.5-turbo
+    --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150
+    --system: string = "Answer my question as if you were an expert in the field."
+    --temperature: float = 0.7
+    --top_p: float = 1.0
+] {
+    # let input = ($in | default $input)
+    if $input == null {
+        error make {msg: "input is required"}
+    }
+    if ($input | describe) != "string" {
+        error make {msg: "input must be a string"}
+    }
+    let max_tokens = ($max_tokens | default 300)
+    let messages = [
+        {"role": "system", "content": $system},
+        {"role": "user", "content": $input}
+    ]
+    let result = (
+        api chat-completion $model $messages --temperature $temperature --top-p $top_p
+        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens 
+    )
+
+    [
+        {system: $system, user: $input} 
+        | merge $result
+    ] | to yaml 
+    | save -a -r ~/full_log.yaml
+
+    [
+        {(date now | date format "%Y-%m-%d_%H:%M"): {
+            input: $input
+            system: $system
+            temperature: $temperature
+            top-p: $top_p
+            content: (echo $"($result.choices.0.message.content)")
+        }}
+    ] | to yaml 
+    | save -a -r ~/short_log.yaml
+    # $result.choices.0.message.content | str trim
+}
+
+export def 'pu-add' [
+    command: string
+] {
+    do {pueue add -p $'nu -c "source /Users/user/apps-files/github/nushell-openai/openai.nu; ($command)" --config "($nu.config-path)" --env-config "($nu.env-path)"'}
+    | null
+}
+
+
+export def 'multiple_prompts' [
+    prompt: string
+] {
+    open ~/.alfred_llms_config.yaml 
+    | each {
+        |i| $i 
+        | items { |k v| [ $'--($k)' $v ] } 
+        | flatten 
+        | pu-add $"results_record '($prompt)' ($in | str join ' ')"
+    }
+} 
