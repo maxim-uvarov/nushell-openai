@@ -283,7 +283,6 @@ export def results_record [
     if ($input | describe) != "string" {
         error make {msg: "input must be a string"}
     }
-    let max_tokens = ($max_tokens | default 300)
     let messages = [
         {"role": "system", "content": $system},
         {"role": "user", "content": $input}
@@ -294,8 +293,13 @@ export def results_record [
     )
 
     [
-        {system: $system, user: $input} 
-        | merge $result
+        {
+            system: $system, 
+            user: $input, 
+            max-tokens: $max_tokens, 
+            model: $model
+        } 
+        $result
     ] | to yaml 
     | save -a -r ~/full_log.yaml
 
@@ -305,11 +309,14 @@ export def results_record [
             system: $system
             temperature: $temperature
             top-p: $top_p
-            content: (echo $"($result.choices.0.message.content)")
+            content: (
+                $result.choices.0.message.content 
+                | str replace -s -a '\n' "\n" 
+                | str replace -s -a '"' "'"
+            )
         }}
     ] | to yaml 
     | save -a -r ~/short_log.yaml
-    # $result.choices.0.message.content | str trim
 }
 
 export def 'pu-add' [
