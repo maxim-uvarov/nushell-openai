@@ -316,6 +316,12 @@ export def results_record [
             )
         }}
     ] | to yaml 
+    | do {|i| 
+        $result.choices.0.message.content 
+        | str replace "\n+" "\n\n      " -a 
+        | $"    content: |-\n      ($in)\n"
+        | $"($i)($in)"
+    } $in
     | save -a -r ~/short_log.yaml
 }
 
