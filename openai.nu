@@ -2,7 +2,7 @@
 
 # MIT LICENCE
 #
-# Copyright 2023 Gabin Lefranc
+# Copyright 2023 Gabin Lefranc, Maxim Uvarov
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy 
 # of this software and associated documentation files (the "Software"), to deal 
@@ -292,6 +292,13 @@ export def results_record [
         --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens 
     )
 
+    let content = (
+        $result.choices.0.message.content 
+        | lines
+        | str trim
+        | str join "\n"
+    )
+
     [
         {
             system: $system, 
@@ -309,19 +316,9 @@ export def results_record [
             system: $system
             temperature: $temperature
             top-p: $top_p
-            content: (
-                $result.choices.0.message.content 
-                | str replace -s -a '\n' "\n" 
-                | str replace -s -a '"' "'"
-            )
+            content: $content
         }}
     ] | to yaml 
-    | do {|i| 
-        $result.choices.0.message.content 
-        | str replace "\n+" "\n\n      " -a 
-        | $"    content: |-\n      ($in)\n"
-        | $"($i)($in)"
-    } $in
     | save -a -r ~/short_log.yaml
 }
 
@@ -344,3 +341,31 @@ export def 'multiple_prompts' [
         | pu-add $"results_record '($prompt)' ($in | str join ' ')"
     }
 } 
+
+export def 'bard_prompt' [
+    prompt: string
+    --temperature = 1.0
+    --candidate_count = 1
+] {
+    (
+        http post $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)" 
+        -t 'application/json' {
+            "prompt": {
+                "text": $prompt
+                },
+            "temperature": $temperature,
+            "candidate_count": $candidate_count
+        }
+    )
+    # (
+    #     curl $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)" 
+    #     -H 'Content-Type: application/json' 
+    #     -X POST 
+    #     -d '{
+    #         "prompt": {
+    #               "text": "Write a story about a magic backpack."
+    #               },
+    #         "temperature": 1.0,
+    #         "candidate_count": 3}'
+    # )
+}
