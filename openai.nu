@@ -329,11 +329,12 @@ export def 'pu-add' [
     | null
 }
 
-
+# Make multiple prompts with parameters defined in YAML file
 export def 'multiple_prompts' [
     prompt: string
+    --file: string = '~/.alfred_llms_config.yaml'
 ] {
-    open ~/.alfred_llms_config.yaml 
+    open $file
     | each {
         |i| $i 
         | items { |k v| [ $'--($k)' $v ] } 
