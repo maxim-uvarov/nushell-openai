@@ -311,13 +311,13 @@ export def results_record [
     | save -a -r ~/full_log.yaml
 
     [
-        {(date now | date format "%Y-%m-%d_%H:%M"): {
+        {
             input: $input
             system: $system
             temperature: $temperature
             top-p: $top_p
             content: $content
-        }}
+        }
     ] | to yaml 
     | save -a -r ~/short_log.yaml
 }
