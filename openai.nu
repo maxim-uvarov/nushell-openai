@@ -43,11 +43,11 @@ export def models [
 }
 
 export-env {
-    let-env OPENAI_DATA = {}
+    $env.OPENAI_DATA = {}
 }
 
 export def-env "set previous_messages" [messages: list] {
-    let-env OPENAI_DATA = {
+    $env.OPENAI_DATA = {
         previous_messages: $messages
     }
 }
