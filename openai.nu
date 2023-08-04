@@ -97,9 +97,11 @@ export def "api chat-completion" [
         | add_param "logit_bias" $logit_bias
         | add_param "user" $user
     )
-    let result = (http post "https://api.openai.com/v1/chat/completions" -H ["Authorization" $"Bearer (get-api)"] -t 'application/json' $params)
-    
-    $result
+    (
+        http post "https://api.openai.com/v1/chat/completions" 
+        -H ["Authorization" $"Bearer (get-api)"] 
+        -t 'application/json' $params
+    )
 }
 # Completion API call. 
 export def "api completion" [
@@ -269,23 +271,17 @@ export def test [
 }
 
 export def results_record [
-    input?: string                          # The question to ask. If not provided, will use the input from the pipeline
+    input: string                          # The question to ask. If not provided, will use the input from the pipeline
     --model: string = "gpt-3.5-turbo"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150
     --system: string = "Answer my question as if you were an expert in the field."
     --temperature: float = 0.7
     --top_p: float = 1.0
 ] {
-    # let input = ($in | default $input)
-    if $input == null {
-        error make {msg: "input is required"}
-    }
-    if ($input | describe) != "string" {
-        error make {msg: "input must be a string"}
-    }
+    let $input_screened = ($input | str replace -a '🍎🍎' "'")
     let messages = [
         {"role": "system", "content": $system},
-        {"role": "user", "content": $input}
+        {"role": "user", "content": $input_screened}
     ]
     let result = (
         api chat-completion $model $messages --temperature $temperature --top-p $top_p
@@ -302,7 +298,7 @@ export def results_record [
     [
         {
             system: $system, 
-            user: $input, 
+            user: $input_screened, 
             max-tokens: $max_tokens, 
             model: $model
         } 
@@ -312,7 +308,7 @@ export def results_record [
 
     [
         {
-            input: $input
+            input: $input_screened
             system: $system
             temperature: $temperature
             top-p: $top_p
@@ -332,9 +328,9 @@ export def 'pu-add' [
 # Make multiple prompts with parameters defined in YAML file
 export def 'multiple_prompts' [
     prompt: string
-    --file: string = '~/.alfred_llms_config.yaml'
+    --config_file_path: string = '~/.alfred_llms_config.yaml'
 ] {
-    open $file
+    open $config_file_path
     | each {
         |i| $i 
         | items { |k v| [ $'--($k)' $v ] } 
