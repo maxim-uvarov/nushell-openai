@@ -4,21 +4,21 @@
 #
 # Copyright 2023 Gabin Lefranc, Maxim Uvarov
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy 
-# of this software and associated documentation files (the "Software"), to deal 
-# in the Software without restriction, including without limitation the rights 
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-# copies of the Software, and to permit persons to whom the Software is 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# The above copyright notice and this permission notice shall be included in 
+# The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
 use utils.nu
@@ -71,7 +71,7 @@ def add_param [name: string, value: any] {
         {}
     })
 }
-# Chat completion API call. 
+# Chat completion API call.
 export def "api chat-completion" [
     model: string                   # ID of the model to use.
     messages: list                 # List of messages to complete from.
@@ -86,7 +86,7 @@ export def "api chat-completion" [
     --user: string                  # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/chat/create
-    let params = ({ model: $model, messages: $messages } 
+    let params = ({ model: $model, messages: $messages }
         | add_param "max_tokens" $max_tokens
         | add_param "temperature" $temperature
         | add_param "top_p" $top_p
@@ -98,12 +98,12 @@ export def "api chat-completion" [
         | add_param "user" $user
     )
     (
-        http post "https://api.openai.com/v1/chat/completions" 
-        -H ["Authorization" $"Bearer (get-api)"] 
+        http post "https://api.openai.com/v1/chat/completions"
+        -H ["Authorization" $"Bearer (get-api)"]
         -t 'application/json' $params
     )
 }
-# Completion API call. 
+# Completion API call.
 export def "api completion" [
     model: string                   # ID of the model to use.
     --prompt: string                # The prompt(s) to generate completions for
@@ -122,7 +122,7 @@ export def "api completion" [
     --user: string                  # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/completions/create
-    let params = ({ model: $model } 
+    let params = ({ model: $model }
         | add_param "prompt" $prompt
         | add_param "suffix" $suffix
         | add_param "max_tokens" $max_tokens
@@ -146,14 +146,14 @@ export def "api completion" [
 export def-env command [
     input?: string      # The command to run. If not provided, will use the input from the pipeline
     --max-tokens: int   # The maximum number of tokens to generate, defaults to 64
-    --no-interactive    # If true, will not ask to execute and will pipe the result 
+    --no-interactive    # If true, will not ask to execute and will pipe the result
 ] {
     let input = ($in | default $input)
     if $input == null {
         error make {msg: "input is required"}
     }
     let max_tokens = ($max_tokens | default 200)
-    
+
     let messages = [
         {"role": "system", "content": "You are a command line analyzer. Write the command that best fits my request in a \"Command\" markdown chapter then describe each parameter used in a \"Explanation\" markdown chapter."},
         {"role": "user", "content": $input}
@@ -161,9 +161,9 @@ export def-env command [
     let result = (api chat-completion "gpt-3.5-turbo" $messages --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens $max_tokens  )
     # return $result
     set previous_messages ($messages | append [$result.choices.0.message])
-    
+
     let result = $result.choices.0.message.content
-    $result | utils display markdown 
+    $result | utils display markdown
 
     if not $no_interactive {
         print ""
@@ -187,7 +187,7 @@ export def-env chat [
     if $input == null {
         error make {msg: "input is required"}
     }
-    
+
     let messages = (get previous_messages | append [
         {"role": "system", "content": "You are ChatGPT, a powerful conversational chatbot. Answer to me in informative way unless I tell you otherwise. You can format your message in markdown."},
         {"role": "user", "content": $input}
@@ -195,7 +195,7 @@ export def-env chat [
     let result = (api chat-completion $model $messages --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 300)
     # return $result
     set previous_messages ($messages | append [$result.choices.0.message])
-    
+
     let result = $result.choices.0.message.content
     $result | utils display markdown
 }
@@ -250,7 +250,7 @@ Commit with a message that explains the staged changes:
 git commit -m \""
     let max_tokens = ($max_tokens | default 2000)
     let openai_result = (api completion "gpt-3.5-turbo" --prompt $input --temperature 0.1 --top-p 1.0 --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens --stop '"')
-    
+
     let openai_result = ($openai_result.choices.0.text | str trim)
     if not $no_interactive {
         print $"(ansi green)($openai_result)(ansi reset)"
@@ -266,7 +266,7 @@ git commit -m \""
 export def test [
     msg: string
 ] {
-    
+
     api chat-completion "gpt-3.5-turbo" [{role:"user" content:"Hello!"}] --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 64 --stop "\\n"
 }
 
@@ -285,11 +285,11 @@ export def results_record [
     ]
     let result = (
         api chat-completion $model $messages --temperature $temperature --top-p $top_p
-        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens 
+        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens
     )
 
     let content = (
-        $result.choices.0.message.content 
+        $result.choices.0.message.content
         | lines
         | str trim
         | str join "\n"
@@ -297,13 +297,13 @@ export def results_record [
 
     [
         {
-            system: $system, 
-            user: $input_screened, 
-            max-tokens: $max_tokens, 
+            system: $system,
+            user: $input_screened,
+            max-tokens: $max_tokens,
             model: $model
-        } 
+        }
         $result
-    ] | to yaml 
+    ] | to yaml
     | save -a -r ~/full_log.yaml
 
     [
@@ -314,7 +314,7 @@ export def results_record [
             top-p: $top_p
             content: $content
         }
-    ] | to yaml 
+    ] | to yaml
     | save -a -r ~/short_log.yaml
 }
 
@@ -332,12 +332,12 @@ export def 'multiple_prompts' [
 ] {
     open $config_file_path
     | each {
-        |i| $i 
-        | items { |k v| [ $'--($k)' $v ] } 
-        | flatten 
+        |i| $i
+        | items { |k v| [ $'--($k)' $v ] }
+        | flatten
         | pu-add $"results_record '($prompt)' ($in | str join ' ')"
     }
-} 
+}
 
 export def 'bard_prompt' [
     prompt: string
@@ -345,7 +345,7 @@ export def 'bard_prompt' [
     --candidate_count = 1
 ] {
     (
-        http post $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)" 
+        http post $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)"
         -t 'application/json' {
             "prompt": {
                 "text": $prompt
@@ -355,9 +355,9 @@ export def 'bard_prompt' [
         }
     )
     # (
-    #     curl $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)" 
-    #     -H 'Content-Type: application/json' 
-    #     -X POST 
+    #     curl $"https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=($env.PALM_API_KEY)"
+    #     -H 'Content-Type: application/json'
+    #     -X POST
     #     -d '{
     #         "prompt": {
     #               "text": "Write a story about a magic backpack."
