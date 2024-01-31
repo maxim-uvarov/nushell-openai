@@ -4,15 +4,16 @@ export def main [prompt] {
 
 
 export def correct_english [
-    prompt
+    prompt: string
 ] {
+    let $prompt_with_tick = $prompt | str replace -a '●' '`'
     let $answer = (
-        llm prompt --no-stream -s "Edit the message and correct grammar. Provide only edited message. Don't change markdown markup." $prompt
+        llm prompt --no-stream -s "Edit the message and correct grammar. Provide only edited message. Don't change markdown markup." $prompt_with_tick
     )
 
     let filename = (now-fn)
 
-    $prompt | save $'/Users/user/Documents/local_files/llms/prompt(now-fn).txt'
+    $prompt_with_tick | save $'/Users/user/Documents/local_files/llms/prompt(now-fn).txt'
     $answer | save $'/Users/user/Documents/local_files/llms/answer(now-fn).txt'
 
     $answer | pbcopy

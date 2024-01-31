@@ -1,5 +1,5 @@
 export def repeat [
-    text: string 
+    text: string
     count: int
 ] {
     (0..<$count | each {|| $text} | str join)
@@ -66,7 +66,7 @@ def md_add_modifier [
             for $i in 0..<($captured_data | length) {
                 let current = ($captured_data | get $i)
                 let captured = $"[($current.text)]\(($current.url)\)"
-                $text = ($text | str replace -s $captured $"(do $append_modifier $env.MARKDOWN_THEME.link)($current.url | ansi link --text $current.text)($apply_prev_mod)")
+                $text = ($text | str replace $captured $"(do $append_modifier $env.MARKDOWN_THEME.link)($current.url | ansi link --text $current.text)($apply_prev_mod)")
             }
         }
     }
@@ -79,7 +79,7 @@ def md_add_modifier [
             for $i in 0..<($parsed | length) {
                 let current = ($parsed | get $i)
                 let captured = $"***($current.text)***"
-                $text = ($text | str replace -s $captured $"(do $append_modifier $env.MARKDOWN_THEME.bold_italic)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.bold_italic]))($apply_prev_mod)")
+                $text = ($text | str replace $captured $"(do $append_modifier $env.MARKDOWN_THEME.bold_italic)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.bold_italic]))($apply_prev_mod)")
             }
         }
     }
@@ -89,7 +89,7 @@ def md_add_modifier [
             for $i in 0..<($parsed | length) {
                 let current = ($parsed | get $i)
                 let captured = $"**($current.text)**"
-                $text = ($text | str replace -s $captured $"(do $append_modifier $env.MARKDOWN_THEME.bold)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.bold]))($apply_prev_mod)")
+                $text = ($text | str replace $captured $"(do $append_modifier $env.MARKDOWN_THEME.bold)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.bold]))($apply_prev_mod)")
             }
         }
     }
@@ -99,7 +99,7 @@ def md_add_modifier [
             for $i in 0..<($parsed | length) {
                 let current = ($parsed | get $i)
                 let captured = $"*($current.text)*"
-                $text = ($text | str replace -s $captured $"(do $append_modifier $env.MARKDOWN_THEME.italic)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.italic]))($apply_prev_mod)")
+                $text = ($text | str replace $captured $"(do $append_modifier $env.MARKDOWN_THEME.italic)($current.text | md_add_modifier ($previous_modifier | append [$env.MARKDOWN_THEME.italic]))($apply_prev_mod)")
             }
         }
     }
@@ -116,14 +116,14 @@ export def "display markdown" [
 #     mut code = []
 #     mut is_code = false
 #     for $line in ($markdown | lines) {
-        
+
 #         if ($line =~ "^```") {
 #             if $is_code == true {
 #                 let str_code = ($code | str join "\n")
 #                 let bat = (which bat)
 #                 if ($bat | length) > 0 and (not $no_bat) {
 #                     mut bat_args = [--color always --paging never --file-name $"code ($code_lang)" -]
-                    
+
 #                     if ($code_lang | is-empty) == false  and $code_lang != "nu" {
 #                         $bat_args = ($bat_args | append ["--language" $code_lang])
 #                     }
@@ -132,7 +132,7 @@ export def "display markdown" [
 #                     } else {
 #                         $str_code | bat $bat_args
 #                     }
-                    
+
 #                 } else {
 #                     if $code_lang == "nu" or $force_nu {
 #                         $str_code | nu-highlight | print
@@ -150,7 +150,7 @@ export def "display markdown" [
 #                 $is_code = true
 #             }
 #             continue
-#         } 
+#         }
 #         if $is_code == true {
 #             $code = ($code | append [$line])
 #             continue
@@ -160,10 +160,10 @@ export def "display markdown" [
 #             let name = ($line | parse -r '^\s*#+\s+(?<name>.*)$' | get 0.name)
 #             md_title $name
 #             continue
-#         } 
+#         }
 
 #         mut newline = $line
-        
+
 #         if ($newline =~ '^\s*-\s+') {
 #             let parsed = ($line | parse -r '^(\s*)(-\s+)' | get 0 )
 #             let index = (($parsed.capture0 | str length) + ($parsed.capture1 | str length))

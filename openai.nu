@@ -46,12 +46,12 @@ export-env {
     $env.OPENAI_DATA = {}
 }
 
-export def-env "set previous_messages" [messages: list] {
+export def --env "set previous_messages" [messages: list] {
     $env.OPENAI_DATA = {
         previous_messages: $messages
     }
 }
-def-env "get previous_messages" [] {
+def --env "get previous_messages" [] {
     if ($env | get -i OPENAI_DATA) != null {
         if ($env.OPENAI_DATA | get -i previous_messages) != null {
             $env.OPENAI_DATA.previous_messages
@@ -79,7 +79,7 @@ export def "api chat-completion" [
     --temperature: number           # The temperature used to control the randomness of the completion.
     --top-p: number                 # The top-p used to control the randomness of the completion.
     --n: int                        # How many completions to generate for each prompt. Use carefully, as it's a token eater.
-    --stop: any                     # Up to 4 sequences where the API will stop generating further tokens.
+    --stop: string                     # Up to 4 sequences where the API will stop generating further tokens.
     --frequency-penalty: number     # A penalty to apply to each token that appears more than once in the completion.
     --presence-penalty: number      # A penalty to apply if the specified tokens don't appear in the completion.
     --logit-bias: record            # A record to modify the likelihood of specified tokens appearing in the completion
@@ -113,8 +113,8 @@ export def "api completion" [
     --top-p: number                 # The top-p used to control the randomness of the completion.
     --n: int                        # How many completions to generate for each prompt. Use carefully, as it's a token eater.
     --logprobs: int                 # Include the log probabilities on the logprobs most likely tokens, as well the chosen tokens.
-    --echo: bool                    # Include the prompt in the returned text.
-    --stop: any                     # A list of tokens that, if encountered, will stop the completion.
+    --echo                         # Include the prompt in the returned text.
+    --stop: string                     # A list of tokens that, if encountered, will stop the completion.
     --frequency-penalty: number     # A penalty to apply to each token that appears more than once in the completion.
     --presence-penalty: number      # A penalty to apply if the specified tokens don't appear in the completion.
     --best-of: int                  # Generates best_of completions server-side and returns the "best" (the one with the highest log probability per token). Use carefully, as it's a token eater.
@@ -143,7 +143,7 @@ export def "api completion" [
 }
 
 # Ask for a command to run. Will return one line command.
-export def-env command [
+export def --env command [
     input?: string      # The command to run. If not provided, will use the input from the pipeline
     --max-tokens: int   # The maximum number of tokens to generate, defaults to 64
     --no-interactive    # If true, will not ask to execute and will pipe the result
@@ -173,7 +173,7 @@ export def-env command [
     }
 }
 # Continue a chat with GPT-3.5
-export def-env chat [
+export def --env chat [
     input?: string
     --reset                              # Reset the chat history
     --model: string = "gpt-3.5-turbo"       # The model to use, defaults to gpt-3.5-turbo
