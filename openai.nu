@@ -24,7 +24,7 @@
 use utils.nu
 
 def get-api [] {
-    if not "OPENAI_API_KEY" in $env {
+    if not ("OPENAI_API_KEY" in $env) {
         error make {msg: "OPENAI_API_KEY not set"}
         exit 1
     }
@@ -122,7 +122,8 @@ export def "api completion" [
     --user: string                  # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/completions/create
-    let params = ({ model: $model }
+    let params = (
+        { model: $model }
         | add_param "prompt" $prompt
         | add_param "suffix" $suffix
         | add_param "max_tokens" $max_tokens
@@ -272,11 +273,12 @@ export def test [
 
 export def results_record [
     input: string                          # The question to ask. If not provided, will use the input from the pipeline
-    --model: string = "gpt-3.5-turbo"    # The model to use, defaults to gpt-3.5-turbo
+    --model (-m): string = "gpt-4-turbo-preview"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150
     --system: string = "Answer my question as if you were an expert in the field."
     --temperature: float = 0.7
     --top_p: float = 1.0
+    --quiet (-q) # don't output the results
 ] {
     let $input_screened = ($input | str replace -a '🍎🍎' "'")
     let messages = [
@@ -295,27 +297,28 @@ export def results_record [
         | str join "\n"
     )
 
-    [
-        {
-            system: $system,
-            user: $input_screened,
-            max-tokens: $max_tokens,
-            model: $model
-        }
-        $result
-    ] | to yaml
-    | save -a -r ~/full_log.yaml
+    {
+        system: $system,
+        user: $input_screened,
+        max-tokens: $max_tokens,
+        model: $model
+    }
+    | append $result
+    | to yaml
+    | save -ar ~/full_log.yaml
 
-    [
-        {
-            input: $input_screened
-            system: $system
-            temperature: $temperature
-            top-p: $top_p
-            content: $content
-        }
-    ] | to yaml
-    | save -a -r ~/short_log.yaml
+    {
+        input: $input_screened
+        system: $system
+        temperature: $temperature
+        top-p: $top_p
+        content: $content
+    }
+    | [$in]
+    | to yaml
+    | save -ar ~/short_log.yaml
+
+    if not $quiet { $content }
 }
 
 export def 'pu-add' [

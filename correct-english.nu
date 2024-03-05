@@ -1,14 +1,11 @@
-export def main [prompt] {
-    correct_english $prompt
-}
+use openai.nu results_record
 
-
-export def correct_english [
+export def main [
     prompt: string
 ] {
     let $prompt_with_tick = $prompt | str replace -a '●' '`'
     let $answer = (
-        llm prompt --no-stream -s "Edit the message and correct grammar. Provide only edited message. Don't change markdown markup." $prompt_with_tick
+        results_record --system "Edit the message and correct grammar. Provide only the edited message. Don't change markdown markup." $prompt_with_tick
     )
 
     let filename = (now-fn)
