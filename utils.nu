@@ -6,7 +6,7 @@ export def repeat [
 }
 
 export-env {
-    let-env MARKDOWN_THEME = {
+    $env.MARKDOWN_THEME = {
         code: "93"
         link: "36"
         title: "107;90"
