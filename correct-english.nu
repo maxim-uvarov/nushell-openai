@@ -10,12 +10,12 @@ export def main [
 
     let filename = (now-fn)
 
-    $prompt_with_tick | save $'/Users/user/Documents/local_files/llms/prompt(now-fn).txt'
-    $answer | save $'/Users/user/Documents/local_files/llms/answer(now-fn).txt'
+    $prompt_with_tick | save $'/Users/user/temp/llms/prompt(now-fn).txt'
+    $answer | save $'/Users/user/temp/llms/answer(now-fn).txt'
 
     $answer | pbcopy
 
-    codium --diff $'/Users/user/Documents/local_files/llms/prompt($filename).txt' $'/Users/user/Documents/local_files/llms/answer($filename).txt'
+    codium --diff $'/Users/user/temp/llms/prompt($filename).txt' $'/Users/user/temp/llms/answer($filename).txt'
 }
 
 def 'now-fn' [
