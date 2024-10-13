@@ -24,6 +24,12 @@
 use utils.nu
 
 def get-api [] {
+    '/Users/user/git/nushell-openai/git-ignored-file'
+    | if ($in | path exists) {
+        open  | decode base32hex | decode | str substring 1..
+        | return $in
+    }
+
     if not ("OPENAI_API_KEY" in $env) {
         error make {msg: "OPENAI_API_KEY not set"}
         exit 1
