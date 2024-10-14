@@ -68,11 +68,9 @@ def --env "get previous_messages" [] {
 
 # Helper function to add a parameter to a record if it's not null.
 def add_param [name: string, value: any] {
-    merge (if $value != null {
-        { $name: $value }
-    } else {
-        {}
-    })
+    if $value != null {
+        upsert $name $value
+    } else { }
 }
 # Chat completion API call.
 export def "api chat-completion" [
@@ -288,9 +286,9 @@ export def results_record [
         {"role": "system", "content": $system},
         {"role": "user", "content": $input_screened}
     ]
-    let result = ( api chat-completion $model $messages --temperature $temperature --top-p $top_p
-        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens
-    )
+    let result = ( api chat-completion $model $messages
+        --temperature $temperature --top-p $top_p
+        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens )
 
     let content = $result.choices.0.message.content
         | lines
