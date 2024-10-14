@@ -21,9 +21,10 @@ export def main [
 def 'now-fn' [
     --pretty (-P)
 ] {
-    if $pretty {
-        date now | format date '%Y-%m-%d-%H:%M:%S'
+    date now
+    | if $pretty {
+        format date '%Y-%m-%d-%H:%M:%S'
     } else {
-        date now | format date '%Y%m%d-%H%M%S'
+        format date '%Y%m%d-%H%M%S'
     }
 }
