@@ -2,20 +2,24 @@ use openai.nu results_record
 
 export def main [
     prompt: string
+    --path: path = '/Users/user/temp/llms/'
 ] {
     let $prompt_with_tick = $prompt | str replace -a '●' '`'
-    let $answer = ( results_record $prompt_with_tick 
-        --system "Edit the message and correct grammar. Provide only the edited message. Don't change markdown markup." 
+    let $answer = ( results_record $prompt_with_tick
+        --system "Edit the message and correct grammar. Provide only the edited message. Don't change markdown markup."
     )
 
-    let filename = (now-fn)
+    let filename = now-fn
 
-    $prompt_with_tick | save $'/Users/user/temp/llms/prompt($filename).txt'
-    $answer | save $'/Users/user/temp/llms/answer($filename).txt'
+    let $prompt_path = $path | path join $'prompt($filename).txt'
+    let $answer_path = $path | path join $'answer($filename).txt'
 
-    $answer | pbcopy
+    $prompt_with_tick | save -f $prompt_path
+    $answer | save -f $answer_path
 
-    codium --diff $'/Users/user/temp/llms/prompt($filename).txt' $'/Users/user/temp/llms/answer($filename).txt'
+    $answer_path | pbcopy
+
+    codium --diff $prompt_path $answer_path
 }
 
 def 'now-fn' [
