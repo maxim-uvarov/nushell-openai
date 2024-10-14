@@ -273,7 +273,7 @@ export def test [
 }
 
 export def results_record [
-    input: string                          # The question to ask. If not provided, will use the input from the pipeline
+    input?: string                          # The question to ask. If not provided, will use the input from the pipeline
     --model (-m): string = "gpt-4o-mini"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150
     --system: string = "Answer my question as if you were an expert in the field."
@@ -281,10 +281,10 @@ export def results_record [
     --top_p: float = 1.0
     --quiet (-q) # don't output the results
 ] {
-    let $input_screened = ($input | str replace -a '🍎🍎' "'")
+    let $input = if $input == null {} else {$input}
     let messages = [
         {"role": "system", "content": $system},
-        {"role": "user", "content": $input_screened}
+        {"role": "user", "content": $input}
     ]
     let result = ( api chat-completion $model $messages
         --temperature $temperature --top-p $top_p
@@ -297,7 +297,7 @@ export def results_record [
 
     {
         system: $system,
-        user: $input_screened,
+        user: $input,
         max-tokens: $max_tokens,
         model: $model
     }
@@ -306,7 +306,7 @@ export def results_record [
     | save -ar ~/full_log.yaml
 
     {
-        input: $input_screened
+        input: $input
         system: $system
         temperature: $temperature
         top-p: $top_p
