@@ -38,13 +38,10 @@ def get-api [] {
 }
 # Lists the OpenAI models
 export def models [
-    --model: string    # The model to retrieve
+    --model: string = ''    # The model to retrieve
 ] {
-    let suffix = (if $model == null or $model == "" {
-        ""
-    } else {
-        $"/($model)"
-    })
+    let suffix = if $model != "" { $"/($model)" }
+
     http get $"https://api.openai.com/v1/models($suffix)" -H ["Authorization" $"Bearer (get-api)"]
 }
 
@@ -291,17 +288,14 @@ export def results_record [
         {"role": "system", "content": $system},
         {"role": "user", "content": $input_screened}
     ]
-    let result = (
-        api chat-completion $model $messages --temperature $temperature --top-p $top_p
+    let result = ( api chat-completion $model $messages --temperature $temperature --top-p $top_p
         --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens
     )
 
-    let content = (
-        $result.choices.0.message.content
+    let content = $result.choices.0.message.content
         | lines
         | str trim
         | str join "\n"
-    )
 
     {
         system: $system,
