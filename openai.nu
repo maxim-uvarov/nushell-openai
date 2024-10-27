@@ -87,7 +87,7 @@ export def "api chat-completion" [
     --user: string                  # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/chat/create
-    let params = ({ model: $model, messages: $messages }
+    let params = { model: $model, messages: $messages }
         | add_param "max_tokens" $max_tokens
         | add_param "temperature" $temperature
         | add_param "top_p" $top_p
@@ -97,11 +97,11 @@ export def "api chat-completion" [
         | add_param "presence_penalty" $presence_penalty
         | add_param "logit_bias" $logit_bias
         | add_param "user" $user
-    )
+
     (
         http post "https://api.openai.com/v1/chat/completions"
-        -H ["Authorization" $"Bearer (get-api)"]
-        -t 'application/json' $params
+            -H ["Authorization" $"Bearer (get-api)"]
+            -t 'application/json' $params
     )
 }
 # Completion API call.
@@ -123,8 +123,7 @@ export def "api completion" [
     --user: string                  # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/completions/create
-    let params = (
-        { model: $model }
+    let params = { model: $model }
         | add_param "prompt" $prompt
         | add_param "suffix" $suffix
         | add_param "max_tokens" $max_tokens
@@ -139,9 +138,8 @@ export def "api completion" [
         | add_param "best_of" $best_of
         | add_param "logit_bias" $logit_bias
         | add_param "user" $user
-    )
-    let result = (http post "https://api.openai.com/v1/completions" -H ["Authorization" $"Bearer (get-api)"] -t 'application/json' $params)
-    $result
+
+    http post "https://api.openai.com/v1/completions" -H ["Authorization" $"Bearer (get-api)"] -t 'application/json' $params
 }
 
 # Ask for a command to run. Will return one line command.
