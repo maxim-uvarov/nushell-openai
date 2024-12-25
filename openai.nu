@@ -202,7 +202,7 @@ export def --env chat [
 # Ask any question to the OpenAI model.
 export def ask [
     input?: string                          # The question to ask. If not provided, will use the input from the pipeline
-    --model: string = "gpt-3.5-turbo"    # The model to use, defaults to gpt-3.5-turbo
+    --model: string = "gpt-4o-mini"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int                       # The maximum number of tokens to generate, defaults to 150
     --system: string = "Answer my question as if you were an expert in the field."
 ] {
