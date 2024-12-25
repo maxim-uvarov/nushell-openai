@@ -199,28 +199,6 @@ export def --env chat [
     let result = $result.choices.0.message.content
     $result | utils display markdown
 }
-# Ask any question to the OpenAI model.
-export def ask [
-    input?: string                          # The question to ask. If not provided, will use the input from the pipeline
-    --model: string = "gpt-4o-mini"    # The model to use, defaults to gpt-3.5-turbo
-    --max-tokens: int                       # The maximum number of tokens to generate, defaults to 150
-    --system: string = "Answer my question as if you were an expert in the field."
-] {
-    let input = ($in | default $input)
-    if $input == null {
-        error make {msg: "input is required"}
-    }
-    if ($input | describe) != "string" {
-        error make {msg: "input must be a string"}
-    }
-    let max_tokens = ($max_tokens | default 300)
-    let messages = [
-        {"role": "system", "content": $system},
-        {"role": "user", "content": $input}
-    ]
-    let result = (api chat-completion $model $messages --temperature 0.7 --top-p 1.0 --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens )
-    $result.choices.0.message.content | str trim
-}
 
 export def "git diff" [
     --max-tokens: int           # The maximum number of tokens to generate, defaults to 100
@@ -270,7 +248,7 @@ export def test [
     api chat-completion "gpt-3.5-turbo" [{role:"user" content:"Hello!"}] --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 64 --stop "\\n"
 }
 
-export def results_record [
+export def ask [
     input?: string                          # The question to ask. If not provided, will use the input from the pipeline
     --model (-m): string = "gpt-4o-mini"    # The model to use, defaults to gpt-3.5-turbo
     --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150

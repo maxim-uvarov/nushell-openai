@@ -1,11 +1,11 @@
-use openai.nu results_record
+use openai.nu ask
 
 export def main [
     prompt?: string
     --path: path = '/Users/user/temp/llms/'
 ] {
     let $prompt_with_tick = if $prompt == null {} else {$prompt}
-    let $answer = ( results_record $prompt_with_tick
+    let $answer = ( ask $prompt_with_tick
         --system "Edit the message and correct grammar. Provide only the edited message. Don't change markdown markup."
     )
 
