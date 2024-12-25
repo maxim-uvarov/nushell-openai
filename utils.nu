@@ -41,7 +41,7 @@ export def "parse advanced" [
         for $i in 0..<($parsed | length) {
             let current = ($parsed | get $i)
             let reconstructed = (do $reconstruct $current)
-            let begin = ($input | str index-of -r $"($previous)," $reconstructed)
+            let begin = ($input | str index-of -r $previous.. $reconstructed)
             let end = ($begin + ($reconstructed | str length))
             $list_result = ($list_result | append ($current | merge {
                 begin: $begin
