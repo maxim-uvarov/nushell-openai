@@ -249,6 +249,9 @@ export def ask [
     # $result.response | print
 
     let content = $result.response
+        | lines
+        | str trim
+        | str join "\n"
 
     {
         system: $system,
@@ -256,7 +259,7 @@ export def ask [
         max-tokens: $max_tokens,
         model: $model
     }
-    | merge $result
+    | append $result
     | to yaml
     | save -ar ~/full_log.yaml
 
