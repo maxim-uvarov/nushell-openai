@@ -116,7 +116,7 @@ export def "api chat-completion" [
             | get choices.0.delta
             | if ($in | is-not-empty) {$in.content}
         }
-        | each {tee {print -n}}
+        | tee {print -n}
     }
     | str join
     | wrap response
