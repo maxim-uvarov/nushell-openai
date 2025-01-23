@@ -85,6 +85,7 @@ export def "api chat-completion" [
     --presence-penalty: number      # A penalty to apply if the specified tokens don't appear in the completion.
     --logit-bias: record            # A record to modify the likelihood of specified tokens appearing in the completion
     --user: string                  # A unique identifier representing your end-user.
+    --no-stream
 ] {
     # See https://platform.openai.com/docs/api-reference/chat/create
     let params = { model: $model, messages: $messages }
@@ -116,7 +117,7 @@ export def "api chat-completion" [
             | get choices.0.delta
             | if ($in | is-not-empty) {$in.content}
         }
-        | tee {print -n}
+        | if $no_stream or ($nu.is-interactive == false) {} else {tee {print -n}}
     }
     | str join
     | wrap response
