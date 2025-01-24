@@ -6,12 +6,18 @@ export def main [
     --codium # copy result to buffer and output into codium --diff
 ] {
     let $prompt = if $prompt == null {} else {$prompt}
+
+    let $prompt_ending_newlines = $prompt
+        | parse -r '(\n*)$'
+        | get capture0.0
+
     let $answer = [
         'Edit the message and correct grammar.'
         'Provide only the edited message.'
         'Do not change markdown markup.' ]
         | to text
         | ask $prompt --system $in --no-stream
+        | $'($in)($prompt_ending_newlines)'
 
     let $filename = now-fn
 
@@ -20,10 +26,6 @@ export def main [
 
     $prompt | save -f $prompt_path
     $answer | save -f $answer_path
-
-    let $prompt_ending_newlines = $prompt
-        | parse -r '(\n*)$'
-        | get capture0.0
 
     if $codium {
         $answer | pbcopy
