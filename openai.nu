@@ -237,6 +237,7 @@ export def ask [
     --temperature: float = 0.7
     --top_p: float = 1.0
     --quiet (-q) # don't output the results
+    --no-stream
 ] {
     let $input = if $input == null {} else {$input}
     let messages = [
@@ -245,7 +246,7 @@ export def ask [
     ]
     let result = ( api chat-completion $model $messages
         --temperature $temperature --top-p $top_p
-        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens )
+        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens --no-stream=$no_stream )
 
     # $result.response | print
 
