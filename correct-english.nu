@@ -11,7 +11,7 @@ export def main [
         'Provide only the edited message.'
         'Do not change markdown markup.' ]
         | to text
-        | ask $prompt_with_tick --system $in
+        | ask $prompt_with_tick --system $in --no-stream
 
     let $filename = now-fn
 
