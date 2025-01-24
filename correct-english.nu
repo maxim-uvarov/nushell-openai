@@ -5,9 +5,10 @@ export def main [
     --path: path = '/Users/user/temp/llms/'
 ] {
     let $prompt_with_tick = if $prompt == null {} else {$prompt}
-    let $answer = 'Edit the message and correct grammar.'
-        | append 'Provide only the edited message.'
-        | append "Don't change markdown markup."
+    let $answer = [
+        'Edit the message and correct grammar.'
+        'Provide only the edited message.'
+        'Do not change markdown markup.' ]
         | to text
         | ask $prompt_with_tick --system $in
 
