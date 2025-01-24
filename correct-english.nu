@@ -3,6 +3,7 @@ use openai.nu ask
 export def main [
     prompt?: string
     --path: path = '/Users/user/temp/llms/'
+    --codium # copy result to buffer and output into codium --diff
 ] {
     let $prompt_with_tick = if $prompt == null {} else {$prompt}
     let $answer = [
@@ -12,7 +13,7 @@ export def main [
         | to text
         | ask $prompt_with_tick --system $in
 
-    let filename = now-fn
+    let $filename = now-fn
 
     let $prompt_path = $path | path join $'prompt($filename).txt'
     let $answer_path = $path | path join $'answer($filename).txt'
@@ -20,9 +21,13 @@ export def main [
     $prompt_with_tick | save -f $prompt_path
     $answer | save -f $answer_path
 
-    $answer | pbcopy
+    if $codium {
+        $answer | pbcopy
 
-    codium --diff $prompt_path $answer_path
+        codium --diff $prompt_path $answer_path
+    } else {
+        $answer
+    }
 }
 
 def 'now-fn' [
