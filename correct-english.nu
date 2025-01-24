@@ -21,12 +21,14 @@ export def main [
     $prompt_with_tick | save -f $prompt_path
     $answer | save -f $answer_path
 
+    let $prompt_ending_newlines = $prompt_with_tick | parse -r '(\n*)$' | get capture0.0
+
     if $codium {
         $answer | pbcopy
 
         codium --diff $prompt_path $answer_path
     } else {
-        $answer
+        $answer + $prompt_ending_newlines
     }
 }
 
