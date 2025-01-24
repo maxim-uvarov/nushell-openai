@@ -244,9 +244,14 @@ export def ask [
         {"role": "system", "content": $system},
         {"role": "user", "content": $input}
     ]
-    let result = ( api chat-completion $model $messages
-        --temperature $temperature --top-p $top_p
-        --frequency-penalty 0 --presence-penalty 0 --max-tokens $max_tokens --no-stream=$no_stream )
+    let result = (
+        api chat-completion $model $messages
+            --temperature $temperature --top-p $top_p
+            --frequency-penalty 0
+            --presence-penalty 0
+            --max-tokens $max_tokens
+            --no-stream=$no_stream
+    )
 
     # $result.response | print
 
