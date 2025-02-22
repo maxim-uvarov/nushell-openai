@@ -117,7 +117,7 @@ export def "api chat-completion" [
             | get choices.0.delta
             | if ($in | is-not-empty) {$in.content}
         }
-        | if $no_stream or ($nu.is-interactive == false) {} else {tee {print -n}}
+        | if $no_stream or ($nu.is-interactive == false) {} else {tee {$'(ansi yellow)($in)(ansi reset)' | print -n}}
     }
     | str join
     | wrap response
