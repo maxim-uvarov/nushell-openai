@@ -111,7 +111,7 @@ export def "api chat-completion" [
     | lines
     | each {|line|
         if $line == "data: [DONE]" {
-            if not $no_streaming {print (ansi clear_entire_screen) (ansi cursor_home) -n}
+            if not $no_streaming {print "\n\n---\n"}
             return
         }
 
