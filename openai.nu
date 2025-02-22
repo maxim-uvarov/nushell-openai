@@ -100,6 +100,8 @@ export def "api chat-completion" [
         | add_param "user" $user
         | add_param "stream" true
 
+    let $no_streaming = $no_stream or ($nu.is-interactive == false)
+
     (
         http post "https://api.openai.com/v1/chat/completions"
             -H ["Authorization" $"Bearer (get-api)"]
@@ -108,7 +110,10 @@ export def "api chat-completion" [
     )
     | lines
     | each {|line|
-        if $line == "data: [DONE]" { print "\n---\n"; return }
+        if $line == "data: [DONE]" {
+            if not $no_streaming {print (ansi clear_entire_screen) (ansi cursor_home) -n}
+            return
+        }
 
         $line
         | if ($in in ["\n", '']) {} else {
@@ -117,7 +122,9 @@ export def "api chat-completion" [
             | get choices.0.delta
             | if ($in | is-not-empty) {$in.content}
         }
-        | if $no_stream or ($nu.is-interactive == false) {} else {tee {$'(ansi yellow)($in)(ansi reset)' | print -n}}
+        | if $no_streaming {} else {
+            tee {$'(ansi yellow)($in)(ansi reset)' | print -n}
+        }
     }
     | str join
     | wrap response
