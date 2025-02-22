@@ -108,7 +108,7 @@ export def "api chat-completion" [
     )
     | lines
     | each {|line|
-        if $line == "data: [DONE]" { return }
+        if $line == "data: [DONE]" { print "\n---\n"; return }
 
         $line
         | if ($in in ["\n", '']) {} else {
