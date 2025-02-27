@@ -2,7 +2,7 @@ export def repeat [
     text: string
     count: int
 ] {
-    (0..<$count | each {|| $text} | str join)
+    (0..<$count | each {|| $text } | str join)
 }
 
 export-env {
@@ -25,16 +25,16 @@ def md_title [title: string] {
     let line = (char -u "2500")
     let line_stop_left = (char -u "2574")
     let line_stop_right = (char -u "2576")
-    print $"\n(1..$left | each {|| $line } | str join)($line_stop_left)(ansi -e { fg: '#000000' bg: '#ffffff' attr: b }) ($title) (ansi reset)($line_stop_right)(1..$right | each {|| $line } | str join)\n"
+    print $"\n(1..$left | each {|| $line } | str join)($line_stop_left)(ansi -e {fg: '#000000' bg: '#ffffff' attr: b}) ($title) (ansi reset)($line_stop_right)(1..$right | each {|| $line } | str join)\n"
 }
 
 export def "parse advanced" [
     pattern: string
     reconstruct: closure
-    --regex(-r)
+    --regex (-r)
 ] {
     let input = $in
-    let parsed = ($input | if $regex {parse -r $pattern} else {parse $pattern})
+    let parsed = ($input | if $regex { parse -r $pattern } else { parse $pattern })
     mut list_result = []
     mut previous = 0
     if ($parsed | length) > 0 {
@@ -43,11 +43,15 @@ export def "parse advanced" [
             let reconstructed = (do $reconstruct $current)
             let begin = ($input | str index-of -r $previous.. $reconstructed)
             let end = ($begin + ($reconstructed | str length))
-            $list_result = ($list_result | append ($current | merge {
-                begin: $begin
-                end: $end
-                reconstructed: $reconstructed
-            }))
+            $list_result = (
+                $list_result | append (
+                    $current | merge {
+                        begin: $begin
+                        end: $end
+                        reconstructed: $reconstructed
+                    }
+                )
+            )
             $previous = $end
         }
     }
@@ -58,8 +62,8 @@ def md_add_modifier [
 ] {
     let text = $in
     mut text = $text
-    let append_modifier = { |mod| ansi -e $'($previous_modifier | append [$mod] | str join ";")m'}
-    let apply_prev_mod = (if $previous_modifier == null {ansi reset} else {[(ansi reset) (ansi -e $'($previous_modifier | str join ";")m')] | str join})
+    let append_modifier = {|mod| ansi -e $'($previous_modifier | append [$mod] | str join ";")m' }
+    let apply_prev_mod = (if $previous_modifier == null { ansi reset } else { [(ansi reset) (ansi -e $'($previous_modifier | str join ";")m')] | str join })
     if $text =~ '\[[^\]]+\]\([^)]+\)' {
         let captured_data = ($text | parse -r '\[(?<text>[^\]]+)\]\((?<url>[^)]+)\)')
         if ($captured_data | length) > 0 {
@@ -107,72 +111,72 @@ def md_add_modifier [
 }
 
 export def "display markdown" [
-    --no-bat(-b)
+    --no-bat (-b)
     --force-nu
 ] {
-#     let input = $in
-#     mut markdown = $input
-#     mut code_lang = ""
-#     mut code = []
-#     mut is_code = false
-#     for $line in ($markdown | lines) {
+    #     let input = $in
+    #     mut markdown = $input
+    #     mut code_lang = ""
+    #     mut code = []
+    #     mut is_code = false
+    #     for $line in ($markdown | lines) {
 
-#         if ($line =~ "^```") {
-#             if $is_code == true {
-#                 let str_code = ($code | str join "\n")
-#                 let bat = (which bat)
-#                 if ($bat | length) > 0 and (not $no_bat) {
-#                     mut bat_args = [--color always --paging never --file-name $"code ($code_lang)" -]
+    #         if ($line =~ "^```") {
+    #             if $is_code == true {
+    #                 let str_code = ($code | str join "\n")
+    #                 let bat = (which bat)
+    #                 if ($bat | length) > 0 and (not $no_bat) {
+    #                     mut bat_args = [--color always --paging never --file-name $"code ($code_lang)" -]
 
-#                     if ($code_lang | is-empty) == false  and $code_lang != "nu" {
-#                         $bat_args = ($bat_args | append ["--language" $code_lang])
-#                     }
-#                     if $code_lang == "nu" {
-#                         $str_code | nu-highlight | bat $bat_args
-#                     } else {
-#                         $str_code | bat $bat_args
-#                     }
+    #                     if ($code_lang | is-empty) == false  and $code_lang != "nu" {
+    #                         $bat_args = ($bat_args | append ["--language" $code_lang])
+    #                     }
+    #                     if $code_lang == "nu" {
+    #                         $str_code | nu-highlight | bat $bat_args
+    #                     } else {
+    #                         $str_code | bat $bat_args
+    #                     }
 
-#                 } else {
-#                     if $code_lang == "nu" or $force_nu {
-#                         $str_code | nu-highlight | print
-#                     } else {
-#                         print $str_code
-#                     }
-#                 }
-#                 $code = []
-#                 $code_lang = ""
-#                 $is_code = false
-#             } else {
-#                 let langs = ($line | parse -r '^```(?<lang>\w+)')
-#                 $code_lang = (if ($langs | length) > 0 {($langs | get 0.lang)} else {null})
-#                 $code = []
-#                 $is_code = true
-#             }
-#             continue
-#         }
-#         if $is_code == true {
-#             $code = ($code | append [$line])
-#             continue
-#         }
+    #                 } else {
+    #                     if $code_lang == "nu" or $force_nu {
+    #                         $str_code | nu-highlight | print
+    #                     } else {
+    #                         print $str_code
+    #                     }
+    #                 }
+    #                 $code = []
+    #                 $code_lang = ""
+    #                 $is_code = false
+    #             } else {
+    #                 let langs = ($line | parse -r '^```(?<lang>\w+)')
+    #                 $code_lang = (if ($langs | length) > 0 {($langs | get 0.lang)} else {null})
+    #                 $code = []
+    #                 $is_code = true
+    #             }
+    #             continue
+    #         }
+    #         if $is_code == true {
+    #             $code = ($code | append [$line])
+    #             continue
+    #         }
 
-#         if ($line =~ '^\s*#+\s+') {
-#             let name = ($line | parse -r '^\s*#+\s+(?<name>.*)$' | get 0.name)
-#             md_title $name
-#             continue
-#         }
+    #         if ($line =~ '^\s*#+\s+') {
+    #             let name = ($line | parse -r '^\s*#+\s+(?<name>.*)$' | get 0.name)
+    #             md_title $name
+    #             continue
+    #         }
 
-#         mut newline = $line
+    #         mut newline = $line
 
-#         if ($newline =~ '^\s*-\s+') {
-#             let parsed = ($line | parse -r '^(\s*)(-\s+)' | get 0 )
-#             let index = (($parsed.capture0 | str length) + ($parsed.capture1 | str length))
-#             let spacing = ($parsed.capture0 | str length)
-#             $newline = $"(repeat ' ' $spacing)(char prompt) ($newline | str substring $index..)"
-#         }
+    #         if ($newline =~ '^\s*-\s+') {
+    #             let parsed = ($line | parse -r '^(\s*)(-\s+)' | get 0 )
+    #             let index = (($parsed.capture0 | str length) + ($parsed.capture1 | str length))
+    #             let spacing = ($parsed.capture0 | str length)
+    #             $newline = $"(repeat ' ' $spacing)(char prompt) ($newline | str substring $index..)"
+    #         }
 
-#         $newline = ($newline | md_add_modifier)
-#         print $newline
-#         print -n (ansi reset)
-#     }
+    #         $newline = ($newline | md_add_modifier)
+    #         print $newline
+    #         print -n (ansi reset)
+    #     }
 }
