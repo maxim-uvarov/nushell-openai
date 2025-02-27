@@ -100,9 +100,9 @@ export def "api chat-completion" [
         | add_param "user" $user
         | add_param "stream" true
 
-    let $no_streaming = $no_stream or ($nu.is-interactive == false)
+    let $streaming = not ($no_stream or ($nu.is-interactive == false))
 
-    if not $no_streaming {
+    if $streaming {
         print -n (ansi --escape "s")
     }
 
@@ -115,7 +115,7 @@ export def "api chat-completion" [
     | lines
     | each {|line|
         if $line == "data: [DONE]" {
-            if not $no_streaming {
+            if $streaming {
                 print -n $'(ansi --escape "u")(ansi --escape "J")'
             }
             return
@@ -128,9 +128,9 @@ export def "api chat-completion" [
             | get choices.0.delta
             | if ($in | is-not-empty) {$in.content}
         }
-        | if $no_streaming {} else {
+        | if $streaming {
             tee {$'(ansi yellow)($in)(ansi reset)' | print -n}
-        }
+        } else {}
     }
     | str join
     | wrap response
