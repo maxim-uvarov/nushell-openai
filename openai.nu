@@ -100,7 +100,7 @@ export def "api chat-completion" [
     | add_param "user" $user
     | add_param "stream" true
 
-    let $streaming = not ($no_stream or ($nu.is-interactive == false))
+    let streaming = not ($no_stream or ($nu.is-interactive == false))
 
     if $streaming {
         print -n (ansi --escape "s")
@@ -252,7 +252,7 @@ export def ask [
     --quiet (-q) # don't output the results
     --no-stream
 ] {
-    let $input = if $input == null { } else { $input }
+    let input = if $input == null { } else { $input }
     let messages = [
         {"role": "system" "content": $system}
         {"role": "user" "content": $input}

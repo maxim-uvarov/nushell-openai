@@ -5,13 +5,13 @@ export def main [
     --path: path = '/Users/user/temp/llms/'
     --codium # copy result to buffer and output into codium --diff
 ] {
-    let $prompt = if $prompt == null {} else {$prompt}
+    let prompt = if $prompt == null {} else {$prompt}
 
-    let $prompt_ending_newlines = $prompt
+    let prompt_ending_newlines = $prompt
         | parse -r '(\n*)$'
         | get capture0.0
 
-    let $answer = [
+    let answer = [
         'Edit the message and correct grammar.'
         'Provide only the edited message.'
         'Do not change markdown markup.' ]
@@ -19,10 +19,10 @@ export def main [
         | ask $prompt --system $in --no-stream
         | $'($in)($prompt_ending_newlines)'
 
-    let $filename = now-fn
+    let filename = now-fn
 
-    let $prompt_path = $path | path join $'prompt($filename).txt'
-    let $answer_path = $path | path join $'answer($filename).txt'
+    let prompt_path = $path | path join $'prompt($filename).txt'
+    let answer_path = $path | path join $'answer($filename).txt'
 
     $prompt | save -f $prompt_path
     $answer | save -f $answer_path
