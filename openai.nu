@@ -102,6 +102,10 @@ export def "api chat-completion" [
 
     let $no_streaming = $no_stream or ($nu.is-interactive == false)
 
+    if not $no_streaming {
+        print -n (ansi --escape "s")
+    }
+
     (
         http post "https://api.openai.com/v1/chat/completions"
             -H ["Authorization" $"Bearer (get-api)"]
@@ -111,7 +115,9 @@ export def "api chat-completion" [
     | lines
     | each {|line|
         if $line == "data: [DONE]" {
-            if not $no_streaming {print "\n\n---\n"}
+            if not $no_streaming {
+                print -n $'(ansi --escape "u")(ansi --escape "J")'
+            }
             return
         }
 
