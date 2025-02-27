@@ -26,7 +26,7 @@ use utils.nu
 def get-api [] {
     '/Users/user/git/nushell-openai/git-ignored-file'
     | if ($in | path exists) {
-        open  | decode base32hex | decode | str substring 1..
+        open | decode base32hex | decode | str substring 1..
         | return $in
     }
 
@@ -38,7 +38,7 @@ def get-api [] {
 }
 # Lists the OpenAI models
 export def models [
-    --model: string = ''    # The model to retrieve
+    --model: string = '' # The model to retrieve
 ] {
     let suffix = if $model != "" { $"/($model)" }
 
@@ -74,31 +74,31 @@ def add_param [name: string, value: any] {
 }
 # Chat completion API call.
 export def "api chat-completion" [
-    model: string                   # ID of the model to use.
-    messages: list                 # List of messages to complete from.
-    --max-tokens: int               # The maximum number of tokens to generate in the completion.
-    --temperature: number           # The temperature used to control the randomness of the completion.
-    --top-p: number                 # The top-p used to control the randomness of the completion.
-    --n: int                        # How many completions to generate for each prompt. Use carefully, as it's a token eater.
-    --stop: string                     # Up to 4 sequences where the API will stop generating further tokens.
-    --frequency-penalty: number     # A penalty to apply to each token that appears more than once in the completion.
-    --presence-penalty: number      # A penalty to apply if the specified tokens don't appear in the completion.
-    --logit-bias: record            # A record to modify the likelihood of specified tokens appearing in the completion
-    --user: string                  # A unique identifier representing your end-user.
+    model: string # ID of the model to use.
+    messages: list # List of messages to complete from.
+    --max-tokens: int # The maximum number of tokens to generate in the completion.
+    --temperature: number # The temperature used to control the randomness of the completion.
+    --top-p: number # The top-p used to control the randomness of the completion.
+    --n: int # How many completions to generate for each prompt. Use carefully, as it's a token eater.
+    --stop: string # Up to 4 sequences where the API will stop generating further tokens.
+    --frequency-penalty: number # A penalty to apply to each token that appears more than once in the completion.
+    --presence-penalty: number # A penalty to apply if the specified tokens don't appear in the completion.
+    --logit-bias: record # A record to modify the likelihood of specified tokens appearing in the completion
+    --user: string # A unique identifier representing your end-user.
     --no-stream
 ] {
     # See https://platform.openai.com/docs/api-reference/chat/create
-    let params = { model: $model, messages: $messages }
-        | add_param "max_tokens" $max_tokens
-        | add_param "temperature" $temperature
-        | add_param "top_p" $top_p
-        | add_param "n" $n
-        | add_param "stop" $stop
-        | add_param "frequency_penalty" $frequency_penalty
-        | add_param "presence_penalty" $presence_penalty
-        | add_param "logit_bias" $logit_bias
-        | add_param "user" $user
-        | add_param "stream" true
+    let params = {model: $model messages: $messages}
+    | add_param "max_tokens" $max_tokens
+    | add_param "temperature" $temperature
+    | add_param "top_p" $top_p
+    | add_param "n" $n
+    | add_param "stop" $stop
+    | add_param "frequency_penalty" $frequency_penalty
+    | add_param "presence_penalty" $presence_penalty
+    | add_param "logit_bias" $logit_bias
+    | add_param "user" $user
+    | add_param "stream" true
 
     let $streaming = not ($no_stream or ($nu.is-interactive == false))
 
@@ -108,9 +108,9 @@ export def "api chat-completion" [
 
     (
         http post "https://api.openai.com/v1/chat/completions"
-            -H ["Authorization" $"Bearer (get-api)"]
-            -t 'application/json'
-            $params
+        -H ["Authorization" $"Bearer (get-api)"]
+        -t 'application/json'
+        $params
     )
     | lines
     | each {|line|
@@ -122,15 +122,15 @@ export def "api chat-completion" [
         }
 
         $line
-        | if ($in in ["\n", '']) {} else {
+        | if ($in in ["\n" '']) { } else {
             str substring 6..
             | from json
             | get choices.0.delta
-            | if ($in | is-not-empty) {$in.content}
+            | if ($in | is-not-empty) { $in.content }
         }
         | if $streaming {
-            tee {$'(ansi yellow)($in)(ansi reset)' | print -n}
-        } else {}
+            tee { $'(ansi yellow)($in)(ansi reset)' | print -n }
+        } else { }
     }
     | str join
     | wrap response
@@ -138,9 +138,9 @@ export def "api chat-completion" [
 
 # Ask for a command to run. Will return one line command.
 export def --env command [
-    input?: string      # The command to run. If not provided, will use the input from the pipeline
-    --max-tokens: int   # The maximum number of tokens to generate, defaults to 64
-    --no-interactive    # If true, will not ask to execute and will pipe the result
+    input?: string # The command to run. If not provided, will use the input from the pipeline
+    --max-tokens: int # The maximum number of tokens to generate, defaults to 64
+    --no-interactive # If true, will not ask to execute and will pipe the result
 ] {
     let input = ($in | default $input)
     if $input == null {
@@ -149,10 +149,10 @@ export def --env command [
     let max_tokens = ($max_tokens | default 200)
 
     let messages = [
-        {"role": "system", "content": "You are a command line analyzer. Write the command that best fits my request in a \"Command\" markdown chapter then describe each parameter used in a \"Explanation\" markdown chapter."},
-        {"role": "user", "content": $input}
+        {"role": "system" "content": "You are a command line analyzer. Write the command that best fits my request in a \"Command\" markdown chapter then describe each parameter used in a \"Explanation\" markdown chapter."}
+        {"role": "user" "content": $input}
     ]
-    let result = (api chat-completion "gpt-3.5-turbo" $messages --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens $max_tokens  )
+    let result = (api chat-completion "gpt-3.5-turbo" $messages --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens $max_tokens)
     # return $result
     set previous_messages ($messages | append [$result.choices.0.message])
 
@@ -169,9 +169,9 @@ export def --env command [
 # Continue a chat with GPT-3.5
 export def --env chat [
     input?: string
-    --reset                              # Reset the chat history
-    --model: string = "gpt-3.5-turbo"       # The model to use, defaults to gpt-3.5-turbo
-    --max-tokens: int                       # The maximum number of tokens to generate, defaults to 150
+    --reset # Reset the chat history
+    --model: string = "gpt-3.5-turbo" # The model to use, defaults to gpt-3.5-turbo
+    --max-tokens: int # The maximum number of tokens to generate, defaults to 150
 ] {
     let input = ($in | default $input)
     if $reset {
@@ -182,10 +182,12 @@ export def --env chat [
         error make {msg: "input is required"}
     }
 
-    let messages = (get previous_messages | append [
-        {"role": "system", "content": "You are ChatGPT, a powerful conversational chatbot. Answer to me in informative way unless I tell you otherwise. You can format your message in markdown."},
-        {"role": "user", "content": $input}
-    ])
+    let messages = (
+        get previous_messages | append [
+            {"role": "system" "content": "You are ChatGPT, a powerful conversational chatbot. Answer to me in informative way unless I tell you otherwise. You can format your message in markdown."}
+            {"role": "user" "content": $input}
+        ]
+    )
     let result = (api chat-completion $model $messages --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 300)
     # return $result
     set previous_messages ($messages | append [$result.choices.0.message])
@@ -195,8 +197,8 @@ export def --env chat [
 }
 
 export def "git diff" [
-    --max-tokens: int           # The maximum number of tokens to generate, defaults to 100
-    --no_interactive            # If true, will not ask to commit and will pipe the result
+    --max-tokens: int # The maximum number of tokens to generate, defaults to 100
+    --no_interactive # If true, will not ask to commit and will pipe the result
 ] {
     let git_status = (^git status | str trim)
     if $git_status =~ "^fatal" {
@@ -213,8 +215,7 @@ git diff --cached --no-color --raw -p
 ```
 
 Result of the comand:
-```diff
-($result)
+```diff($result)
 ```
 
 Commit with a message that explains the staged changes:
@@ -234,49 +235,48 @@ git commit -m \""
     }
 }
 
-
 export def test [
     msg: string
 ] {
 
-    api chat-completion "gpt-3.5-turbo" [{role:"user" content:"Hello!"}] --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 64 --stop "\\n"
+    api chat-completion "gpt-3.5-turbo" [{role: "user" content: "Hello!"}] --temperature 0 --top-p 1.0 --frequency-penalty 0.2 --presence-penalty 0 --max-tokens 64 --stop "\\n"
 }
 
 export def ask [
-    input?: string                          # The question to ask. If not provided, will use the input from the pipeline
-    --model (-m): string = "gpt-4o-mini"    # The model to use, defaults to gpt-3.5-turbo
-    --max-tokens: int = 4000                      # The maximum number of tokens to generate, defaults to 150
+    input?: string # The question to ask. If not provided, will use the input from the pipeline
+    --model (-m): string = "gpt-4o-mini" # The model to use, defaults to gpt-3.5-turbo
+    --max-tokens: int = 4000 # The maximum number of tokens to generate, defaults to 150
     --system: string = "Answer my question as if you were an expert in the field."
     --temperature: float = 0.7
     --top_p: float = 1.0
     --quiet (-q) # don't output the results
     --no-stream
 ] {
-    let $input = if $input == null {} else {$input}
+    let $input = if $input == null { } else { $input }
     let messages = [
-        {"role": "system", "content": $system},
-        {"role": "user", "content": $input}
+        {"role": "system" "content": $system}
+        {"role": "user" "content": $input}
     ]
     let result = (
         api chat-completion $model $messages
-            --temperature $temperature --top-p $top_p
-            --frequency-penalty 0
-            --presence-penalty 0
-            --max-tokens $max_tokens
-            --no-stream=$no_stream
+        --temperature $temperature --top-p $top_p
+        --frequency-penalty 0
+        --presence-penalty 0
+        --max-tokens $max_tokens
+        --no-stream=$no_stream
     )
 
     # $result.response | print
 
     let content = $result.response
-        | lines
-        | str trim
-        | str join "\n"
+    | lines
+    | str trim
+    | str join "\n"
 
     {
-        system: $system,
-        user: $input,
-        max-tokens: $max_tokens,
+        system: $system
+        user: $input
+        max-tokens: $max_tokens
         model: $model
     }
     | append $result
@@ -300,7 +300,7 @@ export def ask [
 export def 'pu-add' [
     command: string
 ] {
-    do {pueue add -p $'nu -c "source /Users/user/apps-files/github/nushell-openai/openai.nu; ($command)" --config "($nu.config-path)" --env-config "($nu.env-path)"'}
+    do { pueue add -p $'nu -c "source /Users/user/apps-files/github/nushell-openai/openai.nu; ($command)" --config "($nu.config-path)" --env-config "($nu.env-path)"' }
     | null
 }
 
@@ -310,9 +310,9 @@ export def 'multiple_prompts' [
     --config_file_path: string = '~/.alfred_llms_config.yaml'
 ] {
     open $config_file_path
-    | each {
-        |i| $i
-        | items { |k v| [ $'--($k)' $v ] }
+    | each {|i|
+        $i
+        | items {|k v| [$'--($k)' $v] }
         | flatten
         | pu-add $"results_record '($prompt)' ($in | str join ' ')"
     }
@@ -328,8 +328,8 @@ export def 'bard_prompt' [
         -t 'application/json' {
             "prompt": {
                 "text": $prompt
-                },
-            "temperature": $temperature,
+            }
+            "temperature": $temperature
             "candidate_count": $candidate_count
         }
     )
@@ -346,43 +346,42 @@ export def 'bard_prompt' [
     # )
 }
 
-
 # unused
 #
 # Completion API call.
 export def "api completion" [
-    model: string                   # ID of the model to use.
-    --prompt: string                # The prompt(s) to generate completions for
-    --suffix: string                # The suffix that comes after a completion of inserted text.
-    --max-tokens: int               # The maximum number of tokens to generate in the completion.
-    --temperature: number           # The temperature used to control the randomness of the completion.
-    --top-p: number                 # The top-p used to control the randomness of the completion.
-    --n: int                        # How many completions to generate for each prompt. Use carefully, as it's a token eater.
-    --logprobs: int                 # Include the log probabilities on the logprobs most likely tokens, as well the chosen tokens.
-    --echo                         # Include the prompt in the returned text.
-    --stop: string                     # A list of tokens that, if encountered, will stop the completion.
-    --frequency-penalty: number     # A penalty to apply to each token that appears more than once in the completion.
-    --presence-penalty: number      # A penalty to apply if the specified tokens don't appear in the completion.
-    --best-of: int                  # Generates best_of completions server-side and returns the "best" (the one with the highest log probability per token). Use carefully, as it's a token eater.
-    --logit-bias: record            # A record to modify the likelihood of specified tokens appearing in the completion
-    --user: string                  # A unique identifier representing your end-user.
+    model: string # ID of the model to use.
+    --prompt: string # The prompt(s) to generate completions for
+    --suffix: string # The suffix that comes after a completion of inserted text.
+    --max-tokens: int # The maximum number of tokens to generate in the completion.
+    --temperature: number # The temperature used to control the randomness of the completion.
+    --top-p: number # The top-p used to control the randomness of the completion.
+    --n: int # How many completions to generate for each prompt. Use carefully, as it's a token eater.
+    --logprobs: int # Include the log probabilities on the logprobs most likely tokens, as well the chosen tokens.
+    --echo # Include the prompt in the returned text.
+    --stop: string # A list of tokens that, if encountered, will stop the completion.
+    --frequency-penalty: number # A penalty to apply to each token that appears more than once in the completion.
+    --presence-penalty: number # A penalty to apply if the specified tokens don't appear in the completion.
+    --best-of: int # Generates best_of completions server-side and returns the "best" (the one with the highest log probability per token). Use carefully, as it's a token eater.
+    --logit-bias: record # A record to modify the likelihood of specified tokens appearing in the completion
+    --user: string # A unique identifier representing your end-user.
 ] {
     # See https://platform.openai.com/docs/api-reference/completions/create
-    let params = { model: $model }
-        | add_param "prompt" $prompt
-        | add_param "suffix" $suffix
-        | add_param "max_tokens" $max_tokens
-        | add_param "temperature" $temperature
-        | add_param "top_p" $top_p
-        | add_param "n" $n
-        | add_param "logprobs" $logprobs
-        | add_param "echo" $echo
-        | add_param "stop" $stop
-        | add_param "frequency_penalty" $frequency_penalty
-        | add_param "presence_penalty" $presence_penalty
-        | add_param "best_of" $best_of
-        | add_param "logit_bias" $logit_bias
-        | add_param "user" $user
+    let params = {model: $model}
+    | add_param "prompt" $prompt
+    | add_param "suffix" $suffix
+    | add_param "max_tokens" $max_tokens
+    | add_param "temperature" $temperature
+    | add_param "top_p" $top_p
+    | add_param "n" $n
+    | add_param "logprobs" $logprobs
+    | add_param "echo" $echo
+    | add_param "stop" $stop
+    | add_param "frequency_penalty" $frequency_penalty
+    | add_param "presence_penalty" $presence_penalty
+    | add_param "best_of" $best_of
+    | add_param "logit_bias" $logit_bias
+    | add_param "user" $user
 
     http post "https://api.openai.com/v1/completions" -H ["Authorization" $"Bearer (get-api)"] -t 'application/json' $params
 }
