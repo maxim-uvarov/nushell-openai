@@ -103,6 +103,8 @@ export def "api chat-completion" [
     let streaming = not ($no_stream or ($nu.is-interactive == false))
 
     if $streaming {
+        clear --keep-scrollback
+        print ($messages | table) ''
         print -n (ansi --escape "s")
     }
 
