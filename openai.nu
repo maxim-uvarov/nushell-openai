@@ -104,7 +104,7 @@ export def "api chat-completion" [
 
     if $streaming {
         clear --keep-scrollback
-        print ($messages | table) ''
+        utils print-current-commandline
         print -n (ansi --escape "s")
     }
 
