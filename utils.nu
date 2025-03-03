@@ -180,3 +180,12 @@ export def "display markdown" [
     #         print -n (ansi reset)
     #     }
 }
+
+export def print-current-commandline [] {
+    open $nu.history-path
+    | query db "select * from history order by id desc limit 1"
+    | get command_line.0
+    | $'> ($in)'
+    | nu-highlight
+    | print
+}
